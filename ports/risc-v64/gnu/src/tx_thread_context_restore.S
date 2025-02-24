@@ -147,9 +147,11 @@ _tx_thread_context_restore:
        except s0 since we use it ourselves. */
 
     LOAD    t0, 30*REGBYTES(sp)                         // Recover mepc
-    csrw    mepc, t0                                    // Setup mepc
+    csrw    mepc, t0                                    // Store mepc
     li      t0, 0x1880                                  // Prepare MPIP
-    csrw    mstatus, t0                                 // Enable MPIP
+    csrs    mstatus, t0                               // Store mepc
+    li      t0, 0x77f                                  // Prepare MPIP
+    csrc    mstatus, t0                                 // Enable MPIP
 
     LOAD    x1,  28*REGBYTES(sp)                        // Recover RA
     LOAD    x5,  19*REGBYTES(sp)                        // Recover t0
@@ -257,9 +259,11 @@ _tx_thread_no_preempt_restore:
        Skip global pointer because that does not change */
 
     LOAD    t0, 240(sp)                                 // Recover mepc
-    csrw    mepc, t0                                    // Setup mepc
+    csrw    mepc, t0                                    // Store mepc
     li      t0, 0x1880                                  // Prepare MPIP
-    csrw    mstatus, t0                                 // Enable MPIP
+    csrs    mstatus, t0                               // Store mepc
+    li      t0, 0x77f                                  // Prepare MPIP
+    csrc    mstatus, t0                                 // Enable MPIP
 
     LOAD    x1,  28*REGBYTES(sp)                        // Recover RA
     LOAD    x5,  19*REGBYTES(sp)                        // Recover t0

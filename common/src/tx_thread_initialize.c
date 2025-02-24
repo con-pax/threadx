@@ -129,7 +129,7 @@ TX_THREAD *     _tx_thread_priority_list[TX_MAX_PRIORITIES];
    disabled.  It is used internally by ThreadX to prevent preemption of a thread in 
    the middle of a service that is resuming or suspending another thread.  */
 
-volatile UINT   _tx_thread_preempt_disable;
+volatile UINT   _tx_thread_preempt_disable;// __attribute__((aligned(8)));
 
 
 /* Define the global function pointer for mutex cleanup on thread completion or 

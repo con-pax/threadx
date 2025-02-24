@@ -104,7 +104,6 @@ timer1_plic_IRQHandler:
 
     /* Call the ThreadX timer routine.  */
     call    _tx_timer_interrupt                     // Call timer interrupt handler
-    call    timer1_interrupt
     ret
     /* Timer interrupt processing is done, jump to ThreadX context restore.  */
 //    j       _tx_thread_context_restore              // Jump to ThreadX context restore function. Note: this does not return!

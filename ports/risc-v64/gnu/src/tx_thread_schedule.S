@@ -201,7 +201,9 @@ _tx_thread_schedule_loop:
     LOAD    t0, 30*REGBYTES(sp)                         // Recover mepc
     csrw    mepc, t0                                    // Store mepc
     li      t0, 0x1880                                  // Prepare MPIP
-    csrw    mstatus, t0                                 // Enable MPIP
+    csrs    mstatus, t0                               // Store mepc
+    li      t0, 0x77f                                  // Prepare MPIP
+    csrc    mstatus, t0                                 // Enable MPIP
 
     LOAD    x1,  28*REGBYTES(sp)                        // Recover RA
     LOAD    x5,  19*REGBYTES(sp)                        // Recover t0
