@@ -292,12 +292,12 @@ _tx_thread_synch_return:
     LOAD    x26,  2*REGBYTES(sp)                        // Recover s10
     LOAD    x27,  1*REGBYTES(sp)                        // Recover s11
     LOAD    t0,  14*REGBYTES(sp)                        // Recover mstatus
-    csrw    mstatus, t0                                 // Store mstatus, enables interrupt
 #if defined(__riscv_float_abi_single) || defined(__riscv_float_abi_double)
     addi    sp, sp, 29*REGBYTES                         // Recover stack frame
 #else
     addi    sp, sp, 16*REGBYTES                         // Recover stack frame
 #endif
+    csrw    mstatus, t0                                 // Store mstatus, enables interrupt
     ret                                                 // Return to thread
 
 /* }  */
