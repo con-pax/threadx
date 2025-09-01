@@ -96,10 +96,10 @@ _tx_thread_schedule_loop:
     /* Increment the run count for this thread.  */
     /* _tx_thread_current_ptr -> tx_thread_run_count++;  */
 
-    LOAD    t2, 1*REGBYTES(t1)                          // Pickup run count
-    LOAD    t3, 6*REGBYTES(t1)                          // Pickup time slice value
+    lwu     t2, 4(t1)                                   // Pickup run count
+    lwu     t3, 36(t1)                                  // Pickup time slice value
     addi    t2, t2, 1                                   // Increment run count
-    STORE   t2, 1*REGBYTES(t1)                          // Store new run count
+    sw      t2, 4(t1)                                   // Store new run count
 
     /* Setup time-slice, if present.  */
     /* _tx_timer_time_slice =  _tx_thread_current_ptr -> tx_thread_time_slice;  */
@@ -109,8 +109,8 @@ _tx_thread_schedule_loop:
     /* Switch to the thread's stack.  */
     /* SP =  _tx_thread_execute_ptr -> tx_thread_stack_ptr;  */
 
-    LOAD    sp, 2*REGBYTES(t1)                          // Switch to thread's stack
-    STORE   t3, 0(t2)                                   // Store new time-slice*/
+    LOAD    sp, 8(t1)                                   // Switch to thread's stack
+    sw      t3, 0(t2)                                   // Store new time-slice*/
 
 #ifdef TX_ENABLE_EXECUTION_CHANGE_NOTIFY
 
@@ -292,12 +292,15 @@ _tx_thread_synch_return:
     LOAD    x26,  2*REGBYTES(sp)                        // Recover s10
     LOAD    x27,  1*REGBYTES(sp)                        // Recover s11
     LOAD    t0,  14*REGBYTES(sp)                        // Recover mstatus
+#if 1
+    csrw    mstatus, t0                                 // Store mstatus, enables interrupt
+#endif
 #if defined(__riscv_float_abi_single) || defined(__riscv_float_abi_double)
     addi    sp, sp, 29*REGBYTES                         // Recover stack frame
 #else
     addi    sp, sp, 16*REGBYTES                         // Recover stack frame
 #endif
-    csrw    mstatus, t0                                 // Store mstatus, enables interrupt
+//    csrw    mstatus, t0                                 // Store mstatus, enables interrupt
     ret                                                 // Return to thread
 
 /* }  */

@@ -74,14 +74,14 @@ _tx_thread_context_save:
     STORE   x6, 18*REGBYTES(sp)
 
     la      x5, _tx_thread_system_state                 // Pickup address of system state
-    LOAD    x6, 0(x5)                                   // Pickup system state
+    lwu      x6, 0(x5)                                   // Pickup system state
 
     /* Check for a nested interrupt condition.  */
     /* if (_tx_thread_system_state++)
     {  */
     beqz    x6, _tx_thread_not_nested_save              // If 0, first interrupt condition
     addi    x6, x6, 1                                   // Increment the interrupt counter
-    STORE   x6, 0(x5)                                   // Store the interrupt counter
+    sw      x6, 0(x5)                                   // Store the interrupt counter
 
     /* Nested interrupt condition.
        Save the reset of the scratch registers on the stack and return to the
@@ -166,7 +166,7 @@ _tx_thread_not_nested_save:
     /* else if (_tx_thread_current_ptr)
     {  */
     addi    x6, x6, 1                                   // Increment the interrupt counter
-    STORE   x6, 0(x5)                                   // Store the interrupt counter
+    sw      x6, 0(x5)                                   // Store the interrupt counter
 
     /* Not nested: Find the user thread that was running and load our SP */
 
@@ -248,8 +248,9 @@ _tx_thread_not_nested_save:
     /* Switch to the system stack.  */
     /* sp =  _tx_thread_system_stack_ptr;  */
 
-    LOAD    t1, _tx_thread_current_ptr                  // Pickup current thread pointer
-    STORE   sp, 2*REGBYTES(t1)                          // Save stack pointer
+    la      t1, _tx_thread_current_ptr                  // Pickup current thread pointer
+    ld      t1, (t1)
+    STORE   sp, 8(t1)                                   // Save stack pointer
 
 #ifdef TX_ENABLE_EXECUTION_CHANGE_NOTIFY
     /* _tx_execution_isr_enter is called with thread stack pointer */

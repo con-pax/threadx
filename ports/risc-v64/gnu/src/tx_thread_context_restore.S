@@ -80,9 +80,9 @@ _tx_thread_context_restore:
     {  */
 
     la      t0, _tx_thread_system_state                 // Pickup addr of nested interrupt count
-    LOAD    t1, 0(t0)                                   // Pickup nested interrupt count
+    lwu     t1, 0(t0)                                   // Pickup nested interrupt count
     addi    t1, t1, -1                                  // Decrement the nested interrupt counter
-    STORE   t1, 0(t0)                                   // Store new nested count
+    sw      t1, 0(t0)                                   // Store new nested count
     beqz    t1, _tx_thread_not_nested_restore           // If 0, not nested restore
 
     /* Interrupts are nested.  */
@@ -152,7 +152,6 @@ _tx_thread_context_restore:
     csrs    mstatus, t0                               // Store mepc
     li      t0, 0x77f                                  // Prepare MPIP
     csrc    mstatus, t0                                 // Enable MPIP
-
     LOAD    x1,  28*REGBYTES(sp)                        // Recover RA
     LOAD    x5,  19*REGBYTES(sp)                        // Recover t0
     LOAD    x6,  18*REGBYTES(sp)                        // Recover t1
@@ -185,13 +184,16 @@ _tx_thread_not_nested_restore:
                || (_tx_thread_preempt_disable))
     {  */
 
-    LOAD    t1, _tx_thread_current_ptr                  // Pickup current thread pointer
+    la      t1, _tx_thread_current_ptr                  // Pickup current thread pointer
+    ld      t1, (t1)
     beqz    t1, _tx_thread_idle_system_restore          // If NULL, idle system restore
 
-    LOAD    t2, _tx_thread_preempt_disable              // Pickup preempt disable flag
+    la      t2, _tx_thread_preempt_disable              // Pickup preempt disable flag
+    lwu     t2, (t2)
     bgtz    t2, _tx_thread_no_preempt_restore           // If set, restore interrupted thread
 
-    LOAD    t2, _tx_thread_execute_ptr                  // Pickup thread execute pointer
+    la      t2, _tx_thread_execute_ptr                  // Pickup thread execute pointer
+    ld      t2, (t2)
     bne     t1, t2, _tx_thread_preempt_restore          // If higher-priority thread is ready, preempt
 
 
@@ -201,7 +203,7 @@ _tx_thread_no_preempt_restore:
     /* Pickup the saved stack pointer.  */
     /* SP =  _tx_thread_current_ptr -> tx_thread_stack_ptr;  */
 
-    LOAD    sp, 2*REGBYTES(t1)                          // Switch back to thread's stack
+    LOAD    sp, 8(t1)                                  // Switch back to thread's stack
 
     /* Recover floating point registers.  */
 #if defined(__riscv_float_abi_single)
@@ -264,7 +266,6 @@ _tx_thread_no_preempt_restore:
     csrs    mstatus, t0                               // Store mepc
     li      t0, 0x77f                                  // Prepare MPIP
     csrc    mstatus, t0                                 // Enable MPIP
-
     LOAD    x1,  28*REGBYTES(sp)                        // Recover RA
     LOAD    x5,  19*REGBYTES(sp)                        // Recover t0
     LOAD    x6,  18*REGBYTES(sp)                        // Recover t1
@@ -289,7 +290,6 @@ _tx_thread_no_preempt_restore:
     addi    sp, sp, 32*REGBYTES                         // Recover stack frame - without floating point enabled
 #endif
     mret                                                // Return to point of interrupt
-
     /* }
     else
     {  */
@@ -297,7 +297,7 @@ _tx_thread_preempt_restore:
     /* Instead of directly activating the thread again, ensure we save the
        entire stack frame by saving the remaining registers. */
 
-    LOAD    t0, 2*REGBYTES(t1)                          // Pickup thread's stack pointer
+    LOAD    t0, 8(t1)                                   // Pickup thread's stack pointer
     ori     t3, x0, 1                                   // Build interrupt stack type
     STORE   t3, 0(t0)                                   // Store stack type
 
@@ -350,14 +350,14 @@ _tx_thread_preempt_restore:
     {  */
 
     la      t0, _tx_timer_time_slice                    // Pickup time slice variable address
-    LOAD    t2, 0(t0)                                   // Pickup time slice
+    lwu     t2, 0(t0)                                   // Pickup time slice
     beqz    t2, _tx_thread_dont_save_ts                 // If 0, skip time slice processing
 
         /* _tx_thread_current_ptr -> tx_thread_time_slice =  _tx_timer_time_slice
         _tx_timer_time_slice =  0;  */
 
-    STORE   t2, 6*REGBYTES(t1)                          // Save current time slice
-    STORE   x0, 0(t0)                                   // Clear global time slice
+    sw     t2, 36(t1)                                   // Save current time slice
+    sw     x0, 0(t0)                                    // Clear global time slice
 
 
     /* }  */

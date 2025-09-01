@@ -143,7 +143,7 @@ _tx_thread_system_return:
     /* _tx_thread_current_ptr -> tx_thread_stack_ptr =  SP;
     SP = _tx_thread_system_stack_ptr;  */
 
-    STORE   sp, 2*REGBYTES(t1)                          // Save stack pointer
+    STORE   sp, 8(t1)                                   // Save stack pointer
     LOAD    sp, 0(t2)                                   // Switch to system stack
 
     /* Determine if the time-slice is active.  */
@@ -151,7 +151,7 @@ _tx_thread_system_return:
     {  */
 
     la      t4, _tx_timer_time_slice                    // Pickup time slice variable addr
-    LOAD    t3, 0(t4)                                   // Pickup time slice value
+    lwu     t3, 0(t4)                                   // Pickup time slice value
     la      t2, _tx_thread_schedule                     // Pickup address of scheduling loop
     beqz    t3, _tx_thread_dont_save_ts                 // If no time-slice, don't save it
 
@@ -159,8 +159,8 @@ _tx_thread_system_return:
         /* _tx_thread_current_ptr -> tx_thread_time_slice =  _tx_timer_time_slice;
         _tx_timer_time_slice =  0;  */
 
-    STORE   t3, 6*REGBYTES(t1)                          // Save current time-slice for thread
-    STORE   x0, 0(t4)                                   // Clear time-slice variable
+    sw      t3, 36(t1)                          // Save current time-slice for thread
+    sw      x0, 0(t4)                                   // Clear time-slice variable
 
     /* }  */
 _tx_thread_dont_save_ts:

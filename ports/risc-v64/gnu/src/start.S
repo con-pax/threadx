@@ -196,7 +196,7 @@ trap_vector:
     #else
         addi    sp, sp, -256                            // Allocate space for all registers - without floating point enabled
     #endif
-    sw      x1, 224(sp)                             // Store RA
+    sd      x1, 224(sp)                             // Store RA
     call    _tx_thread_context_save                 // Call ThreadX context save
 
     call    _tx_timer_interrupt

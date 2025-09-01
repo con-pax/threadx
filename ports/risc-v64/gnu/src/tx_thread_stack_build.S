@@ -138,7 +138,7 @@ If floating point support:
 
     Stack Bottom: (higher memory address)  */
 
-    LOAD    t0, 4*REGBYTES(a0)                          // Pickup end of stack area
+    LOAD    t0, 24(a0)                          // Pickup end of stack area
     li      t1, ~15                                     // Build 16-byte alignment mask
     and     t0, t0, t1                                  // Make sure 16-byte alignment
 
@@ -223,6 +223,6 @@ If floating point support:
     /* Setup stack pointer.  */
     /* thread_ptr -> tx_thread_stack_ptr =  t0;  */
 
-    STORE   t0, 2*REGBYTES(a0)                          // Save stack pointer in thread's
+    STORE   t0, 8(a0)                                   // Save stack pointer in thread's
     ret                                                 //   control block and return
 /* }  */

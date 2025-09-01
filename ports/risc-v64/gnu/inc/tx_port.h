@@ -99,9 +99,9 @@ typedef char                                    CHAR;
 typedef unsigned char                           UCHAR;
 typedef int                                     INT;
 typedef unsigned int                            UINT;
-typedef long                                    LONG;
-typedef unsigned long                           ULONG;
-typedef unsigned long long                      ULONG64;
+typedef int                                     LONG;
+typedef unsigned int                            ULONG;
+typedef unsigned long                           ULONG64;
 typedef short                                   SHORT;
 typedef unsigned short                          USHORT;
 #define ULONG64_DEFINED
