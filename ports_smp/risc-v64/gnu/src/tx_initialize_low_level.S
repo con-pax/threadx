@@ -1,0 +1,126 @@
+/***************************************************************************
+ * Copyright (c) 2024 Microsoft Corporation
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the MIT License which is available at
+ * https://opensource.org/licenses/MIT.
+ *
+ * SPDX-License-Identifier: MIT
+ **************************************************************************/
+
+
+/**************************************************************************/
+/**************************************************************************/
+/**                                                                       */
+/** ThreadX Component                                                     */
+/**                                                                       */
+/**   Initialize                                                          */
+/**                                                                       */
+/**************************************************************************/
+/**************************************************************************/
+
+    .section .data
+    .global  __tx_free_memory_start
+__tx_free_memory_start:
+
+
+    .section .text
+/**************************************************************************/
+/*                                                                        */
+/*  FUNCTION                                               RELEASE        */
+/*                                                                        */
+/*    _tx_initialize_low_level                           RISC-V64/GNU     */
+/*                                                           6.2.1        */
+/*  AUTHOR                                                                */
+/*                                                                        */
+/*    Scott Larson, Microsoft Corporation                                 */
+/*                                                                        */
+/*  DESCRIPTION                                                           */
+/*                                                                        */
+/*    This function is responsible for any low-level processor            */
+/*    initialization, including setting up interrupt vectors, setting     */
+/*    up a periodic timer interrupt source, saving the system stack       */
+/*    pointer for use in ISR processing later, and finding the first      */
+/*    available RAM memory address for tx_application_define.             */
+/*                                                                        */
+/*  INPUT                                                                 */
+/*                                                                        */
+/*    None                                                                */
+/*                                                                        */
+/*  OUTPUT                                                                */
+/*                                                                        */
+/*    None                                                                */
+/*                                                                        */
+/*  CALLS                                                                 */
+/*                                                                        */
+/*    None                                                                */
+/*                                                                        */
+/*  CALLED BY                                                             */
+/*                                                                        */
+/*    _tx_initialize_kernel_enter           ThreadX entry function        */
+/*                                                                        */
+/*  RELEASE HISTORY                                                       */
+/*                                                                        */
+/*    DATE              NAME                      DESCRIPTION             */
+/*                                                                        */
+/*  03-08-2023      Scott Larson            Initial Version 6.2.1         */
+/*                                                                        */
+/**************************************************************************/
+/* VOID   _tx_initialize_low_level(VOID)
+{  */
+    .global  _tx_initialize_low_level
+_tx_initialize_low_level:
+    csrr t1, mhartid                // Get current hart id
+#if defined(CONFIG_TARGET_MPFSOC)
+    add t1, t1, -1                  // Remove e51 from the picture
+#endif
+
+    slli t1, t1, 3                  // Convert to 64 bit int offset as it is array1 of pointers
+    la      t0, _tx_thread_system_stack_ptr
+    add     t0, t0, t1
+    sd      sp, (t0)                // Save system stack pointer
+
+    la t0, __stack_top_h4$          // This is the end of the RAM usage
+    addi t0, t0, 16                 // Step on a bit
+
+
+//    la      t0, __tx_free_memory_start              // Pickup first free address
+//    sd      t0, _tx_initialize_unused_memory, t1    // Save unused memory address
+    la      t0, __l2_scratchpad_vma_end
+    addi    t2, t2, 1024
+    la      t1, _tx_initialize_unused_memory
+    sd      t0, 0(t1)    // Save unused memory address
+//    sd      t0, __l2_scratchpad_vma_end, t1    // Save unused memory address
+
+#ifdef __riscv_flen
+    fscsr x0
+#endif
+
+    ret
+
+
+    /* Define the actual timer interrupt/exception handler.  */
+
+    .global  timer1_plic_IRQHandler
+    //.global  __minterrupt_000007
+    //EXTWEAK __require_minterrupt_vector_table
+timer1_plic_IRQHandler:
+//__minterrupt_000007:
+    //REQUIRE __require_minterrupt_vector_table
+
+
+    /* Before calling _tx_thread_context_save, we have to allocate an interrupt
+       stack frame and save the current value of x1 (ra). */
+//#if defined(__riscv_float_abi_single) || defined(__riscv_float_abi_double)
+//    addi    sp, sp, -520                            // Allocate space for all registers - with floating point enabled
+//#else
+//    addi    sp, sp, -256                            // Allocate space for all registers - without floating point enabled
+//#endif
+//    sd      x1, 224(sp)                             // Store RA
+//    call    _tx_thread_context_save                 // Call ThreadX context save
+
+    /* Call the ThreadX timer routine.  */
+    call    _tx_timer_interrupt                     // Call timer interrupt handler
+    ret
+    /* Timer interrupt processing is done, jump to ThreadX context restore.  */
+//    j       _tx_thread_context_restore              // Jump to ThreadX context restore function. Note: this does not return!
