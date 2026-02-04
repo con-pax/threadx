@@ -148,7 +148,11 @@ UINT                        processing_complete;
 
     /* Set the processing complete flag to false.  */
     processing_complete =  TX_FALSE;
-
+if(thread_ptr == 0x8025F70)
+{
+    thread_ptr++;
+    thread_ptr--;
+}
 #ifndef TX_NOT_INTERRUPTABLE
 
     /* Disable interrupts.  */
@@ -592,7 +596,7 @@ UINT                        processing_complete;
                 _tx_thread_preempt_disable++;
 
                 /* Restore interrupts.  */
-                TX_RESTORE
+                TX_RESTORE_INT_OFF
 #endif
 
                 /* If so, return control to the system.  */
@@ -949,11 +953,16 @@ UINT                        processing_complete;
                     _tx_thread_preempt_disable++;
 
                     /* Restore interrupts.  */
-                    TX_RESTORE
+                    TX_RESTORE_INT_OFF
 #endif
 
                     /* Preemption is needed - return to the system!  */
                     _tx_thread_system_return();
+                    if((_tx_thread_smp_protection.tx_thread_smp_protect_count == 1) && (_tx_thread_smp_protection.tx_thread_smp_protect_core == _tx_thread_smp_core_get()))
+                    {
+                        volatile int dummy;
+                        dummy++;
+                    }
 
 #ifdef TX_NOT_INTERRUPTABLE
 

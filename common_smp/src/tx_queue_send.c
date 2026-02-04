@@ -304,6 +304,11 @@ VOID            (*queue_send_notify)(struct TX_QUEUE_STRUCT *notify_queue_ptr);
 
             /* Pickup thread pointer.  */
             TX_THREAD_GET_CURRENT(thread_ptr)
+            if(thread_ptr == 0x8025F70)
+            {
+                thread_ptr++;
+                thread_ptr--;
+            }
 
             /* Setup cleanup routine pointer.  */
             thread_ptr -> tx_thread_suspend_cleanup =  &(_tx_queue_cleanup);
@@ -348,7 +353,6 @@ VOID            (*queue_send_notify)(struct TX_QUEUE_STRUCT *notify_queue_ptr);
 
             /* Set the state to suspended.  */
             thread_ptr -> tx_thread_state =    TX_QUEUE_SUSP;
-
 #ifndef TX_DISABLE_NOTIFY_CALLBACKS
 
             /* Pickup the notify callback routine for this queue.  */

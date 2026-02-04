@@ -923,7 +923,7 @@ TX_TIMER_INTERNAL           *previous_timer;
                     _tx_thread_preempt_disable++;
 
                     /* Restore interrupts.  */
-                    TX_RESTORE
+                    TX_RESTORE_INT_OFF
 #endif
 
                     /* Preemption is needed - return to the system!  */

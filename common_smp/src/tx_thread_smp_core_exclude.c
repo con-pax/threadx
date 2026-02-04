@@ -201,7 +201,7 @@ UINT            status;
                         _tx_thread_preempt_disable++;
 
                         /* Restore interrupts.  */
-                        TX_RESTORE
+                        TX_RESTORE_INT_OFF
 #endif
 
                         /* Transfer control to the system so the scheduler can execute

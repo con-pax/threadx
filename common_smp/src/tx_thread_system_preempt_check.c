@@ -138,7 +138,7 @@ UINT            restore_needed;
                 _tx_thread_preempt_disable++;
 
                 /* Restore interrupts.  */
-                TX_RESTORE
+                TX_RESTORE_INT_OFF
 #endif
 
                 /* Return to the system so the higher priority thread can be scheduled.  */

@@ -59,7 +59,9 @@ TX_THREAD *                 _tx_thread_execute_ptr[TX_THREAD_SMP_MAX_CORES];
 
 TX_THREAD *                 _tx_thread_smp_schedule_list[TX_THREAD_SMP_MAX_CORES];
 ULONG                       _tx_thread_smp_reschedule_pending;
-TX_THREAD_SMP_PROTECT       _tx_thread_smp_protection;
+TX_THREAD_SMP_PROTECT       _tx_thread_smp_protection  __attribute__ ((section (".l2_scratchpad")));
+//TX_THREAD_SMP_PROTECT       _tx_thread_smp_protection  __attribute__ ((section (".ddr_data")));
+//TX_THREAD_SMP_PROTECT       _tx_thread_smp_protection;
 volatile ULONG              _tx_thread_smp_release_cores_flag;
 ULONG                       _tx_thread_smp_system_error;
 ULONG                       _tx_thread_smp_inter_core_interrupts[TX_THREAD_SMP_MAX_CORES];
