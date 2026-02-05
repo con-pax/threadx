@@ -24,12 +24,18 @@ set(CUSTOM_INC_DIR ${CMAKE_CURRENT_BINARY_DIR}/custom_inc)
 # Pick up the port specific variables and apply them
 if(DEFINED THREADX_CUSTOM_PORT)
     add_subdirectory(${THREADX_CUSTOM_PORT} threadx_port)
+elseif(DEFINED THREADX_SMP_PORT)
+    add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/ports_smp/${THREADX_ARCH}/${THREADX_TOOLCHAIN})
 else()
     add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/ports/${THREADX_ARCH}/${THREADX_TOOLCHAIN})
 endif()
 
 # Pick up the common stuff
-add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/common)
+if(DEFINED THREADX_SMP_PORT)
+    add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/common_smp)
+else()
+    add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/common)
+endif()
 
 # Define the FreeRTOS adaptation layer
 add_library(freertos-threadx EXCLUDE_FROM_ALL)
