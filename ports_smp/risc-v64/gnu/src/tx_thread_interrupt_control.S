@@ -1,5 +1,5 @@
 /***************************************************************************
- * Copyright (c) 2024 Microsoft Corporation
+ * Copyright 2026 Microchip FPGA Embedded Systems Solutions.
  *
  * This program and the accompanying materials are made available under the
  * terms of the MIT License which is available at
@@ -19,7 +19,6 @@
 /**************************************************************************/
 /**************************************************************************/
 
-    RETURN_MASK = 0x000000000000000F
     SET_SR_MASK = 0xFFFFFFFFFFFFFFF0
 
     .section .text
@@ -31,7 +30,7 @@
 /*                                                           6.2.1        */
 /*  AUTHOR                                                                */
 /*                                                                        */
-/*    Scott Larson, Microsoft Corporation                                 */
+/*    Peter Mc Shane, Microchip FPGA Embedded Systems Solutions.          */
 /*                                                                        */
 /*  DESCRIPTION                                                           */
 /*                                                                        */
@@ -58,7 +57,7 @@
 /*                                                                        */
 /*    DATE              NAME                      DESCRIPTION             */
 /*                                                                        */
-/*  03-08-2023      Scott Larson            Initial Version 6.2.1         */
+/*  27-01-2026      Peter Mc Shane            Initial Version 6.2.1       */
 /*                                                                        */
 /**************************************************************************/
 /* UINT   _tx_thread_interrupt_control(UINT new_posture)

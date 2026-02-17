@@ -1,5 +1,5 @@
 /***************************************************************************
- * Copyright (c) 2024 Microsoft Corporation
+ * Copyright 2026 Microchip FPGA Embedded Systems Solutions.
  *
  * This program and the accompanying materials are made available under the
  * terms of the MIT License which is available at
@@ -32,7 +32,7 @@
 /*                                                           6.2.1        */
 /*  AUTHOR                                                                */
 /*                                                                        */
-/*    Scott Larson, Microsoft Corporation                                 */
+/*    Peter Mc Shane, Microchip FPGA Embedded Systems Solutions.          */
 /*                                                                        */
 /*  DESCRIPTION                                                           */
 /*                                                                        */
@@ -62,16 +62,12 @@
 /*                                                                        */
 /*    DATE              NAME                      DESCRIPTION             */
 /*                                                                        */
-/*  03-08-2023      Scott Larson            Initial Version 6.2.1         */
+/*  27-01-2026      Peter Mc Shane          Initial Version 6.2.1         */
 /*                                                                        */
 /**************************************************************************/
 /* VOID   _tx_thread_schedule(VOID)
 {  */
     .global  _tx_thread_schedule
-_tx_thread_schedule_ret:
-    nop
-    nop
-
 _tx_thread_schedule:
 
     /* Enable interrupts.  */
@@ -85,22 +81,13 @@ _tx_thread_schedule:
     add t1, t1, -1                                      // Remove e51 from the picture
 #endif
 
-#if defined(DBG_ANNO_2H)
-    la t6, 0x201220a0
-    li t5, DBG_SCHED
-    sll t5, t5, t1
-    sw t5, (t6)
-    sw t5, 4(t6)
-    sw t5, (t6)
-#endif
-
     slli t1, t1, 3                                      // Convert to 64 bit address offset
     la      t0, _tx_thread_execute_ptr                  // Pickup address of execute ptr
     add t0, t1, t0
 _tx_thread_schedule_loop:
     csrci   mstatus, 0x08                               // Disable interrupts
     LOAD    t1, 0(t0)                                   // Pickup next thread to execute
-    beqz    t1, _tx_thread_schedule                // If NULL, wait for thread to execute
+    beqz    t1, _tx_thread_schedule                     // If NULL, wait for thread to execute
 
     /* }
     while(_tx_thread_execute_ptr == TX_NULL);  */
@@ -112,42 +99,33 @@ _tx_thread_schedule_loop:
     add t4, t4, 1                       // Assuming 0 based id we need to make it non zero
                                         // PFSoC already is for the U54s
 #endif
-    addi    t1, t1, 268                 # Need to add offset here as AMOxxx does not allow reg+offset addressing
-//fence
+    addi    t1, t1, 268                 // Need to add offset here as AMOxxx does not allow reg+offset addressing
     amoswap.w.aq t2, t4, (t1)
-//fence
-    bnez    t2, _tx_thread_schedule     # Out of luck so retry
+    bnez    t2, _tx_thread_schedule     // Out of luck so retry
 
-    j fall_thru
-
-got_it:
-    nop
-    nop
-
-fall_thru:
-    addi     t1, t1, -268               # Back to start of struct
-    lwu     t4, 252(t1)                 # Fetch tx_thread_smp_core_control
-    bnez    t4, clear_all                   # Ready bit not set so retry
-    sw      x0, 268(t1)                 # Release the lock
+    addi     t1, t1, -268               // Back to start of struct
+    lwu     t4, 252(t1)                 // Fetch tx_thread_smp_core_control
+    bnez    t4, clear_all               // Ready bit not set so retry
+    sw      x0, 268(t1)                 // Release the lock
     fence
     j       _tx_thread_schedule
 
 clear_all:
-    sw      x0, 252(t1)                 # Clear ready flag
-    sw      x0, 268(t1)                 # Release the lock
+    sw      x0, 252(t1)                 // Clear ready flag
+    sw      x0, 268(t1)                 // Release the lock
     fence
 
     /* Setup the current thread pointer.  */
     /* _tx_thread_current_ptr =  _tx_thread_execute_ptr;  */
-    csrr t4, mhartid                                    // Get current hart id
+    csrr    t4, mhartid                                 // Get current hart id
 #if defined(CONFIG_TARGET_MPFSOC)
-    add t4, t4, -1                                      // Remove e51 from the picture
+    add     t4, t4, -1                                  // Remove e51 from the picture
 #endif
 
     slli t4, t4, 3                                      // Convert to 64 bit address offset
 
     la      t2, _tx_thread_current_ptr                  // Pickup current thread pointer address
-    add    t2, t2, t4
+    add     t2, t2, t4
     sd      t1, (t2)                                    // Update the pointer
     fence
 
@@ -163,7 +141,7 @@ clear_all:
        it can schedule the new thread.  */
 
     sd      x0, (t2)                                    // Clear current pointer
-    li     t0, 1
+    li      t0, 1
     sw      t0, 252(t1)                                 // Re set ready flag
     fence
     J       _tx_thread_schedule
@@ -177,9 +155,9 @@ _execute_ptr_unchanged:
     addi    t2, t2, 1                                   // Increment run count
     sw      t2, 4(t1)                                   // Store new run count
 
-    csrr t4, mhartid                                    // Get current hart id
+    csrr    t4, mhartid                                 // Get current hart id
 #if defined(CONFIG_TARGET_MPFSOC)
-    add t4, t4, -1                                      // Remove e51 from the picture
+    add     t4, t4, -1                                  // Remove e51 from the picture
 #endif
     slli t4, t4, 2                                      // Convert to 32 bit int offset
 
@@ -193,12 +171,9 @@ _execute_ptr_unchanged:
     /* SP =  _tx_thread_execute_ptr -> tx_thread_stack_ptr;  */
 
     ld      sp, 8(t1)                                   // Switch to thread's stack
-    blez sp, bad_addr
-    beqz sp, bad_addr
     sw      t3, 0(t2)                                   // Store new time-slice*/
 
 #ifdef TX_ENABLE_EXECUTION_CHANGE_NOTIFY
-
     call    _tx_execution_thread_enter                  // Call the thread execution enter function
 #endif
 
@@ -284,25 +259,13 @@ _execute_ptr_unchanged:
     /* Recover standard registers.  */
 
     LOAD    t0, 30*REGBYTES(sp)                         // Recover mepc
-    beqz    t0, bad_addr
     csrw    mepc, t0                                    // Store mepc
     csrw    mscratch, t0
-#if 1
+
     li      t0, 0x1880                                  // Prepare MPIP
-    csrs    mstatus, t0                               // Store mepc
-    li      t0, 0x77f                                  // Prepare MPIP
+    csrs    mstatus, t0                                 // Store mepc
+    li      t0, 0x77f                                   // Prepare MPIP
     csrc    mstatus, t0                                 // Enable MPIP
-#endif
-#if defined(DBG_ANNO_2H)
-    csrr  t1, mhartid
-    addi t1, t1, -1
-    la t6, 0x201220a0
-    li t5, DBG_SCHED
-    sll t5, t5, t1
-    sw t5,4(t6)
-    sw t5, (t6)
-    sw t5, 4(t6)
-#endif
 
     LOAD    x1,  28*REGBYTES(sp)                        // Recover RA
     LOAD    x5,  19*REGBYTES(sp)                        // Recover t0
@@ -341,19 +304,6 @@ _execute_ptr_unchanged:
     mret                                                // Return to point of interrupt
 
 _tx_thread_synch_return:
-#if defined(DBG_ANNO_2H)
-    csrr  t1, mhartid
-    addi t1, t1, -1
-    la t6, 0x201220a0
-    li t5, DBG_SCHED
-    sll t5, t5, t1
-    sw t5,4(t6)
-    sw t5, (t6)
-    sw t5, 4(t6)
-    sw t5, (t6)
-    sw t5, 4(t6)
-#endif
-
 #if defined(__riscv_float_abi_single)
     flw     f8, 15*REGBYTES(sp)                         // Recover fs0
     flw     f9, 16*REGBYTES(sp)                         // Recover fs1
@@ -414,14 +364,3 @@ _tx_thread_synch_return:
     ret                                                 // Return to thread
 
 /* }  */
-
-bad_addr:
-    nop
-    nop
-    j bad_addr
-
-_oops:
-    nop
-    nop
-    j _oops
-

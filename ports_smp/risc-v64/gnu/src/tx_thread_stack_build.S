@@ -180,7 +180,6 @@ If floating point support:
     STORE   x0, 27*REGBYTES(t0)                         // Initial a0
     STORE   x0, 28*REGBYTES(t0)                         // Initial ra
     STORE   a1, 30*REGBYTES(t0)                         // Initial mepc
-    beqz    a1, bad_addr
 
 #if defined(__riscv_float_abi_single) || defined(__riscv_float_abi_double)
     STORE   x0, 31*REGBYTES(t0)                         // Inital ft0
@@ -232,9 +231,3 @@ If floating point support:
                  // Save stack pointer in thread's
     ret                                                 //   control block and return
 /* }  */
-
-bad_addr:
-    nop
-    nop
-    j bad_addr
-

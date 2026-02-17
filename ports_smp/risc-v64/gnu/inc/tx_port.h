@@ -53,53 +53,11 @@
 #ifndef TX_PORT_H
 #define TX_PORT_H
 
-//#define DBG_PROT_LOG
-#define DBG_ANNO_4H
 #ifdef __ASSEMBLER__
 
-#if 0
 #define TX_PR_LOCK  0
 #define TX_PR_OWN   8
 #define TX_PR_CNT   12
-#define TX_PR_FLAG  16
-#define TX_PR_FLAG1 20
-#define TX_PR_FLAG2 24
-#define TX_PR_FLAG3 28
-#define TX_PR_SHIFT 2
-#else
-#define TX_PR_LOCK  0
-#define TX_PR_OWN   64
-#define TX_PR_CNT   68
-#define TX_PR_FLAG  128
-#define TX_PR_FLAG1 192
-#define TX_PR_FLAG2 256
-#define TX_PR_FLAG3 320
-#define TX_PR_SHIFT 6
-#endif
-
-/*
- * debug annotation for a 2 hart setup where pairs of i/o are used to show code
- * execution over the two harts.
- */
-//#define DBG_ANNO_2H
-#define DBG_ANNO_4H
-
-#if defined(DBG_ANNO_2H)
-#define DBG_PROTECTION      1
-#define DBG_TRIGGER         4
-#define DBG_UNPROTECT       8
-#define DBG_SYSRET          32
-#define DBG_PRE_DIS         128
-#define DBG_TIMER           512
-#define DBG_PROTECT         1024
-#define DBG_TRIG_SRC        4096
-#define DBG_SCHED            16384
-#endif
-
-#if defined(DBG_ANNO_4H)
-#define DBG_TIMER           1
-#define DBG_TRIGGER         2
-#endif
 
 
 #if __riscv_xlen == 64
@@ -362,33 +320,13 @@ struct TX_THREAD_STRUCT;
 
 
 /* Define the ThreadX SMP protection structure.   */
-#if 0
 typedef struct TX_THREAD_SMP_PROTECT_STRUCT
 {
     ULONG           tx_thread_smp_protect_in_force;
     ULONG           tx_thread_smp_protect_pad_0;
     ULONG           tx_thread_smp_protect_core;
     ULONG           tx_thread_smp_protect_count;
-//    ULONG           tx_thread_smp_protect_pad_1;
-    ULONG           tx_thread_smp_protect_pad_2;
-    ULONG           tx_thread_smp_protect_pad_3;
-    ULONG           tx_thread_smp_protect_pad_4;
-    ULONG           tx_thread_smp_protect_pad_5;
 } TX_THREAD_SMP_PROTECT;
-#else
-typedef struct TX_THREAD_SMP_PROTECT_STRUCT
-{
-    ULONG           tx_thread_smp_protect_in_force;
-    ULONG           tx_thread_smp_protect_pad_0[15];
-    ULONG           tx_thread_smp_protect_core;
-    ULONG           tx_thread_smp_protect_count;
-    ULONG           tx_thread_smp_protect_pad_1[14];
-    ULONG           tx_thread_smp_protect_pad_2[16];
-    ULONG           tx_thread_smp_protect_pad_3[16];
-    ULONG           tx_thread_smp_protect_pad_4[16];
-    ULONG           tx_thread_smp_protect_pad_5[16];
-} TX_THREAD_SMP_PROTECT;
-#endif
 
 /* Define ThreadX interrupt lockout and restore macros for protection on
    access of critical kernel information.  The restore interrupt macro must
@@ -403,8 +341,8 @@ typedef struct TX_THREAD_SMP_PROTECT_STRUCT
 #define TX_DISABLE_INT_ON                       interrupt_save =  _tx_thread_smp_protect();
 //#define TX_DISABLE_INT_ON                       {_tx_thread_interrupt_control(8);interrupt_save =  _tx_thread_smp_protect();}
 #define TX_RESTORE                              _tx_thread_smp_unprotect(interrupt_save);
-//#define TX_RESTORE_INT_OFF                              _tx_thread_smp_unprotect(interrupt_save);
-#define TX_RESTORE_INT_OFF                      _tx_thread_smp_unprotect(0);
+#define TX_RESTORE_INT_OFF                              _tx_thread_smp_unprotect(interrupt_save);
+//#define TX_RESTORE_INT_OFF                      _tx_thread_smp_unprotect(0);
 
 /************* End ThreadX SMP data type and function prototype definitions.  *************/
 #if 0

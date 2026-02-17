@@ -1,5 +1,5 @@
 /***************************************************************************
- * Copyright (c) 2025 Microchip FPGA Embedded Systems Solutions.
+ * Copyright (c) 2026 Microchip FPGA Embedded Systems Solutions.
  *
  * This program and the accompanying materials are made available under the
  * terms of the MIT License which is available at
@@ -28,11 +28,11 @@
 /*                                                                        */
 /*  FUNCTION                                               RELEASE        */
 /*                                                                        */
-/*    _tx_thread_smp_core_preempt                    */
+/*    _tx_thread_smp_core_preempt                                         */
 /*                                                           6.2.1        */
 /*  AUTHOR                                                                */
 /*                                                                        */
-/*    Peter Mc Shane, Microchip FPGA Embedded Systems Solutions.           */
+/*    Peter Mc Shane, Microchip FPGA Embedded Systems Solutions.          */
 /*                                                                        */
 /*  DESCRIPTION                                                           */
 /*                                                                        */
@@ -62,7 +62,7 @@
 /*                                                                        */
 /*    DATE              NAME                      DESCRIPTION             */
 /*                                                                        */
-/*  24-08-2025      Peter Mc Shane            Initial Version 6.2.1         */
+/*  27-01-2026      Peter Mc Shane            Initial Version 6.2.1       */
 /*                                                                        */
 /**************************************************************************/
     .globl  _tx_thread_smp_core_preempt
@@ -80,5 +80,5 @@ _tx_thread_smp_core_preempt:
     add a0, a0, t0                  # Add to base of CLINT
     li t1, 1
     sw t1, (t0)                     # Assert inter hart interrupt
-    # Do we clear it here or does the receiver clear?
+                                    # Receiver clears it
     ret

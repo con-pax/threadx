@@ -1,5 +1,5 @@
 /***************************************************************************
- * Copyright (c) 2024 Microsoft Corporation
+ * Copyright 2026 Microchip FPGA Embedded Systems Solutions.
  *
  * This program and the accompanying materials are made available under the
  * terms of the MIT License which is available at
@@ -30,7 +30,7 @@
 /*                                                           6.2.1        */
 /*  AUTHOR                                                                */
 /*                                                                        */
-/*    Scott Larson, Microsoft Corporation                                 */
+/*    Peter Mc Shane, Microchip FPGA Embedded Systems Solutions.          */
 /*                                                                        */
 /*  DESCRIPTION                                                           */
 /*                                                                        */
@@ -58,7 +58,7 @@
 /*                                                                        */
 /*    DATE              NAME                      DESCRIPTION             */
 /*                                                                        */
-/*  03-08-2023      Scott Larson            Initial Version 6.2.1         */
+/*  27-01-2026      Peter Mc Shane            Initial Version 6.2.1       */
 /*                                                                        */
 /**************************************************************************/
 /* VOID   _tx_thread_context_save(VOID)
@@ -72,13 +72,6 @@ _tx_thread_context_save:
 
     STORE   t0, 19*REGBYTES(sp)                         // First store t0 and t1
     STORE   t1, 18*REGBYTES(sp)
-
-// debug - got here even though we currently have protection...
-//    csrr t0, mhartid
-//    add t0, t0, -1
-//    la t1, _tx_thread_smp_protection # The protect in force flag is ULONG which is 32 bit
-//    lw t1, TX_PR_OWN(t1)                    # Fetch protection owner
-//    beq t0, t1, bad_addr2
 
     csrr t1, mhartid                                    // Get current hart id
 #if defined(CONFIG_TARGET_MPFSOC)
@@ -116,7 +109,6 @@ _tx_thread_context_save:
     STORE   x30, 14*REGBYTES(sp)                        // Store t5
     STORE   x31, 13*REGBYTES(sp)                        // Store t6
     csrr    t0, mepc                                    // Load exception program counter
-    beqz    t0, bad_addr
     STORE   t0, 30*REGBYTES(sp)                         // Save it on the stack
 
     /* Save floating point scratch registers.  */
@@ -191,7 +183,7 @@ _tx_thread_not_nested_save:
 #endif
 
     slli t1, t1, 3                                      // Convert to 64 bit address offset
-    la      t0, _tx_thread_current_ptr                    // Pickup current thread pointer
+    la      t0, _tx_thread_current_ptr                  // Pickup current thread pointer
     add     t0, t0, t1
     ld      t1, (t0)
     beqz    t1, _tx_thread_idle_system_save             // If NULL, idle system was interrupted
@@ -214,7 +206,6 @@ _tx_thread_not_nested_save:
     STORE   x31, 13*REGBYTES(sp)                        // Store t6
 
     csrr    t0, mepc                                    // Load exception program counter
-    beqz    t0, bad_addr
     STORE   t0, 30*REGBYTES(sp)                         // Save it on the stack
 
     /* Save floating point scratch registers.  */
@@ -278,12 +269,10 @@ _tx_thread_not_nested_save:
 #endif
 
     slli t1, t1, 3                                      // Convert to 64 bit address offset
-    li      t0, 0x0a000000
-    ble     sp, t0, bad_addr
     la      t0, _tx_thread_current_ptr                  // Pickup current thread pointer
     add     t0, t0, t1
     ld      t0, 0(t0)
-    STORE   sp, 8(t0)                          // Save stack pointer
+    STORE   sp, 8(t0)                                   // Save stack pointer
 
 #ifdef TX_ENABLE_EXECUTION_CHANGE_NOTIFY
     /* _tx_execution_isr_enter is called with thread stack pointer */
@@ -299,8 +288,6 @@ _tx_thread_not_nested_save:
     la      t0, _tx_thread_system_stack_ptr
     add     t0, t0, t1
     LOAD    sp, 0(t0)                                   // Switch to system stack
-    blez sp, bad_addr
-    beqz sp, bad_addr
     ret                                                 // Return to calling ISR
 
     /* }
@@ -308,7 +295,6 @@ _tx_thread_not_nested_save:
     {  */
 
 _tx_thread_idle_system_save:
-
 
 #ifdef TX_ENABLE_EXECUTION_CHANGE_NOTIFY
     call    _tx_execution_isr_enter                     // Call the ISR execution enter function
@@ -324,13 +310,3 @@ _tx_thread_idle_system_save:
     addi    sp, sp, 32*REGBYTES                         // Recover the reserved stack space
 #endif
     ret                                                 // Return to calling ISR
-
-bad_addr:
-    nop
-    nop
-    j bad_addr
-
-bad_addr2:
-    nop
-    nop
-    j bad_addr2

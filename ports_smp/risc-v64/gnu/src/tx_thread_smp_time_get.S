@@ -1,5 +1,5 @@
 /***************************************************************************
- * Copyright (c) 2025 Microchip FPGA Embedded Systems Solutions.
+ * Copyright (c) 2026 Microchip FPGA Embedded Systems Solutions.
  *
  * This program and the accompanying materials are made available under the
  * terms of the MIT License which is available at
@@ -28,11 +28,11 @@
 /*                                                                        */
 /*  FUNCTION                                               RELEASE        */
 /*                                                                        */
-/*    _tx_thread_smp_time_get                       */
+/*    _tx_thread_smp_time_get                                             */
 /*                                                           6.2.1        */
 /*  AUTHOR                                                                */
 /*                                                                        */
-/*    Peter Mc Shane, Microchip FPGA Embedded Systems Solutions.           */
+/*    Peter Mc Shane, Microchip FPGA Embedded Systems Solutions.          */
 /*                                                                        */
 /*  DESCRIPTION                                                           */
 /*                                                                        */
@@ -59,7 +59,7 @@
 /*                                                                        */
 /*    DATE              NAME                      DESCRIPTION             */
 /*                                                                        */
-/*  24-08-2025      Peter Mc Shane           Initial Version 6.2.1   ?      */
+/*  24-08-2026      Peter Mc Shane           Initial Version 6.2.1   ?    */
 /*                                                                        */
 /**************************************************************************/
     .globl  _tx_thread_smp_time_get

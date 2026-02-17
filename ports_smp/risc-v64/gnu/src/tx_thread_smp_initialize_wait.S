@@ -1,5 +1,5 @@
 /***************************************************************************
- * Copyright (c) 2025 Microchip FPGA Embedded Systems Solutions.
+ * Copyright (c) 2026 Microchip FPGA Embedded Systems Solutions.
  *
  * This program and the accompanying materials are made available under the
  * terms of the MIT License which is available at
@@ -26,11 +26,11 @@
 /*                                                                        */
 /*  FUNCTION                                               RELEASE        */
 /*                                                                        */
-/*    _tx_thread_smp_initialize_wait                 */
+/*    _tx_thread_smp_initialize_wait                                      */
 /*                                                           6.2.1        */
 /*  AUTHOR                                                                */
 /*                                                                        */
-/*    Peter Mc Shane, Microchip FPGA Embedded Systems Solutions.           */
+/*    Peter Mc Shane, Microchip FPGA Embedded Systems Solutions.          */
 /*                                                                        */
 /*  DESCRIPTION                                                           */
 /*                                                                        */
@@ -58,7 +58,7 @@
 /*                                                                        */
 /*    DATE              NAME                      DESCRIPTION             */
 /*                                                                        */
-/*  24-08-2025      Peter Mc Shane           Initial Version 6.2.1   ?      */
+/*  27-01-2026      Peter Mc Shane           Initial Version 6.2.1   ?    */
 /*                                                                        */
 /**************************************************************************/
     .globl  _tx_thread_smp_initialize_wait
@@ -73,11 +73,11 @@ _tx_thread_smp_initialize_wait:
     slli t1, t1, 2                  # Convert to 32 bit int offset as it is array of ULONG
     la t2, _tx_thread_system_state
     add t2, t2, t1                  # address of _tx_thread_system_state[core]
-    li t4, 0xF0F0F0F0              # This is the initialize in progress value
+    li t4, 0xF0F0F0F0               # This is the initialize in progress value
 
 wait_for_initialize:
     lwu t3, (t2)
-    nop
+    nop                             # Empty loops may make debug difficult so pad a bit
     nop
     bne t3, t4, wait_for_initialize # Wait until we get to init stage
     la t4, _tx_thread_smp_release_cores_flag
@@ -103,5 +103,5 @@ core_0_wait:
     bnez t3, core_0_wait            # Loop until core 0 is finished init
 
     J _tx_thread_schedule           # Head to the scheduler
-    ret                             # Should never get here...
 
+    ret                             # Should never get here...

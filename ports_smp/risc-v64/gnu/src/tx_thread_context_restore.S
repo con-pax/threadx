@@ -1,5 +1,5 @@
 /***************************************************************************
- * Copyright (c) 2024 Microsoft Corporation
+ * Copyright 2026 Microchip FPGA Embedded Systems Solutions.
  *
  * This program and the accompanying materials are made available under the
  * terms of the MIT License which is available at
@@ -21,11 +21,6 @@
 
 #include "tx_port.h"
 
-
-
-
-
-//    .section .text
     .section .l2_scratchcodetext,"ax",@progbits
 
 /**************************************************************************/
@@ -36,7 +31,7 @@
 /*                                                           6.2.1        */
 /*  AUTHOR                                                                */
 /*                                                                        */
-/*    Scott Larson, Microsoft Corporation                                 */
+/*    Peter Mc Shane, Microchip FPGA Embedded Systems Solutions.          */
 /*                                                                        */
 /*  DESCRIPTION                                                           */
 /*                                                                        */
@@ -65,7 +60,7 @@
 /*                                                                        */
 /*    DATE              NAME                      DESCRIPTION             */
 /*                                                                        */
-/*  03-08-2023      Scott Larson            Initial Version 6.2.1         */
+/*  27-01-2026      Peter Mc Shane          Initial Version 6.2.1         */
 /*                                                                        */
 /**************************************************************************/
 /* VOID   _tx_thread_context_restore(VOID)
@@ -91,18 +86,11 @@ _tx_thread_context_restore:
 #endif
     slli t2, t2, 2                                      // Convert hart ID to 32 bit offset
 
-// debug
-//    la t0, _tx_thread_smp_protection # The protect in force flag is ULONG which is 32 bit
-//    lw t3, TX_PR_OWN(t0)                    # Fetch protection owner
-//    slli  t3, t3, 2
-//    beq t3, t2, bad_addr
-
-
     la      t0, _tx_thread_system_state                 // Pickup addr of nested interrupt count
     add     t0, t0, t2
-    lwu    t1, 0(t0)                                    // Pickup nested interrupt count
+    lwu     t1, 0(t0)                                   // Pickup nested interrupt count
     addi    t1, t1, -1                                  // Decrement the nested interrupt counter
-    sw   t1, 0(t0)                                      // Store new nested count
+    sw      t1, 0(t0)                                   // Store new nested count
     beqz    t1, _tx_thread_not_nested_restore           // If 0, not nested restore
 
     /* Interrupts are nested.  */
@@ -169,12 +157,11 @@ _tx_thread_context_restore:
        Also skip the saved registers since they have been restored by any function we called,
        except s0 since we use it ourselves. */
 
-    LOAD    t0, 240(sp)                         // Recover mepc
-    beqz    t0, bad_addr
+    LOAD    t0, 240(sp)                                 // Recover mepc
     csrw    mepc, t0                                    // Store mepc
     li      t0, 0x1880                                  // Prepare MPIP
-    csrs    mstatus, t0                               // Store mepc
-    li      t0, 0x77f                                  // Prepare MPIP
+    csrs    mstatus, t0                                 // Store mepc
+    li      t0, 0x77f                                   // Prepare MPIP
     csrc    mstatus, t0                                 // Enable MPIP
     LOAD    x1,  28*REGBYTES(sp)                        // Recover RA
     LOAD    x5,  19*REGBYTES(sp)                        // Recover t0
@@ -220,7 +207,7 @@ _tx_thread_not_nested_restore:
     beq     t3, t1, _tx_thread_no_preempt_restore       // Preemption not required
 
     la      t3, _tx_thread_smp_protection
-    lwu     t4,  TX_PR_OWN(t3)                                   // Get protection owner
+    lwu     t4,  TX_PR_OWN(t3)                          // Get protection owner
     srli    t2, t2, 3                                   // Back to hart ID
     bne     t2, t4, _tx_thread_preempt_restore          // No match so preempt path taken
 
@@ -234,9 +221,7 @@ _tx_thread_no_preempt_restore:
     /* Pickup the saved stack pointer.  */
     /* SP =  _tx_thread_current_ptr -> tx_thread_stack_ptr;  */
 
-    LOAD    sp, 8(t1)                          // Switch back to thread's stack
-    blez sp, bad_addr
-    beqz sp, bad_addr
+    LOAD    sp, 8(t1)                                   // Switch back to thread's stack
     /* Recover floating point registers.  */
 #if defined(__riscv_float_abi_single)
     flw     f0, 31*REGBYTES(sp)                         // Recover ft0
@@ -293,11 +278,10 @@ _tx_thread_no_preempt_restore:
        Skip global pointer because that does not change */
 
     ld      t0, 240(sp)                                 // Recover mepc
-    beqz    t0, bad_addr
     csrw    mepc, t0                                    // Store mepc
     li      t0, 0x1880                                  // Prepare MPIP
-    csrs    mstatus, t0                               // Store mepc
-    li      t0, 0x77f                                  // Prepare MPIP
+    csrs    mstatus, t0                                 // Store mepc
+    li      t0, 0x77f                                   // Prepare MPIP
     csrc    mstatus, t0                                 // Enable MPIP
     LOAD    x1,  28*REGBYTES(sp)                        // Recover RA
     LOAD    x5,  19*REGBYTES(sp)                        // Recover t0
@@ -330,37 +314,37 @@ _tx_thread_preempt_restore:
     /* Instead of directly activating the thread again, ensure we save the
        entire stack frame by saving the remaining registers. */
 
-    LOAD    t0, 8(t1)                          // Pickup thread's stack pointer
+    LOAD    t0, 8(t1)                                   // Pickup thread's stack pointer
     ori     t3, x0, 1                                   // Build interrupt stack type
     STORE   t3, 0(t0)                                   // Store stack type
 
     /* Store floating point preserved registers.  */
 #ifdef __riscv_float_abi_single
-    fsw     f8,  39*REGBYTES(t0)                                // Store fs0
-    fsw     f9,  40*REGBYTES(t0)                                // Store fs1
-    fsw     f18, 49*REGBYTES(t0)                                // Store fs2
-    fsw     f19, 50*REGBYTES(t0)                                // Store fs3
-    fsw     f20, 51*REGBYTES(t0)                                // Store fs4
-    fsw     f21, 52*REGBYTES(t0)                                // Store fs5
-    fsw     f22, 53*REGBYTES(t0)                                // Store fs6
-    fsw     f23, 54*REGBYTES(t0)                                // Store fs7
-    fsw     f24, 55*REGBYTES(t0)                                // Store fs8
-    fsw     f25, 56*REGBYTES(t0)                                // Store fs9
-    fsw     f26, 57*REGBYTES(t0)                                // Store fs10
-    fsw     f27, 58*REGBYTES(t0)                                // Store fs11
+    fsw     f8,  39*REGBYTES(t0)                        // Store fs0
+    fsw     f9,  40*REGBYTES(t0)                        // Store fs1
+    fsw     f18, 49*REGBYTES(t0)                        // Store fs2
+    fsw     f19, 50*REGBYTES(t0)                        // Store fs3
+    fsw     f20, 51*REGBYTES(t0)                        // Store fs4
+    fsw     f21, 52*REGBYTES(t0)                        // Store fs5
+    fsw     f22, 53*REGBYTES(t0)                        // Store fs6
+    fsw     f23, 54*REGBYTES(t0)                        // Store fs7
+    fsw     f24, 55*REGBYTES(t0)                        // Store fs8
+    fsw     f25, 56*REGBYTES(t0)                        // Store fs9
+    fsw     f26, 57*REGBYTES(t0)                        // Store fs10
+    fsw     f27, 58*REGBYTES(t0)                        // Store fs11
 #elif defined(__riscv_float_abi_double)
-    fsd     f8,  39*REGBYTES(t0)                                // Store fs0
-    fsd     f9,  40*REGBYTES(t0)                                // Store fs1
-    fsd     f18, 49*REGBYTES(t0)                                // Store fs2
-    fsd     f19, 50*REGBYTES(t0)                                // Store fs3
-    fsd     f20, 51*REGBYTES(t0)                                // Store fs4
-    fsd     f21, 52*REGBYTES(t0)                                // Store fs5
-    fsd     f22, 53*REGBYTES(t0)                                // Store fs6
-    fsd     f23, 54*REGBYTES(t0)                                // Store fs7
-    fsd     f24, 55*REGBYTES(t0)                                // Store fs8
-    fsd     f25, 56*REGBYTES(t0)                                // Store fs9
-    fsd     f26, 57*REGBYTES(t0)                                // Store fs10
-    fsd     f27, 58*REGBYTES(t0)                                // Store fs11
+    fsd     f8,  39*REGBYTES(t0)                        // Store fs0
+    fsd     f9,  40*REGBYTES(t0)                        // Store fs1
+    fsd     f18, 49*REGBYTES(t0)                        // Store fs2
+    fsd     f19, 50*REGBYTES(t0)                        // Store fs3
+    fsd     f20, 51*REGBYTES(t0)                        // Store fs4
+    fsd     f21, 52*REGBYTES(t0)                        // Store fs5
+    fsd     f22, 53*REGBYTES(t0)                        // Store fs6
+    fsd     f23, 54*REGBYTES(t0)                        // Store fs7
+    fsd     f24, 55*REGBYTES(t0)                        // Store fs8
+    fsd     f25, 56*REGBYTES(t0)                        // Store fs9
+    fsd     f26, 57*REGBYTES(t0)                        // Store fs10
+    fsd     f27, 58*REGBYTES(t0)                        // Store fs11
 #endif
 
     /* Store standard preserved registers.  */
@@ -390,15 +374,10 @@ _tx_thread_preempt_restore:
     add     t0, t2, t0
 
     slli    t2, t2, 1
-//    li      t3, 0x0a000000
-//    ble     sp, t3, bad_addr
-//    la      t3, _tx_thread_current_ptr                  // Save thread stack pointer
-//    add     t3, t2, t3
-//    ld      t3, 0(t3)
     la      t3, _tx_thread_system_stack_ptr             // Switch to system stack
     add     t3, t2, t3
     ld      sp, (t3)
-    lwu     t3, (t0)                                    //
+    lwu     t3, (t0)                                    // Pull saved stack type
     beqz    t3, _tx_thread_dont_save_ts                 // If 0, skip time slice processing
 
         /* _tx_thread_current_ptr -> tx_thread_time_slice =  _tx_timer_time_slice
@@ -411,7 +390,6 @@ _tx_thread_dont_save_ts:
     /* Clear the current task pointer.  */
     /* _tx_thread_current_ptr =  TX_NULL;  */
 
-//    slli    t2, t2, 1
     la      t3, _tx_thread_current_ptr
     add     t3, t3, t2
     sd      x0, (t3)
@@ -426,25 +404,6 @@ _tx_thread_dont_save_ts:
 
 _tx_thread_idle_system_restore:
     /* Just return back to the scheduler!  */
-// debug
-    csrr t0, mhartid
-    add t0, t0, -1
-    la t1, _tx_thread_smp_protection # The protect in force flag is ULONG which is 32 bit
-    lw t1, TX_PR_OWN(t1)                    # Fetch protection owner
-    beq t0, t1, bad_addr2
-//    csrw    mscratch, x1 // Debug save of ra and tp
-//    csrw    sscratch, s0
     j       _tx_thread_schedule                         // Return to scheduler
 
 /* }  */
-
-bad_addr:
-    nop
-    nop
-    j bad_addr
-
-bad_addr2:
-    nop
-    nop
-    j bad_addr2
-

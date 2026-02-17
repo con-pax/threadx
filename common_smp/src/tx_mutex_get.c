@@ -108,12 +108,6 @@ UINT            status;
     /* Pickup thread pointer.  */
     TX_THREAD_GET_CURRENT(thread_ptr)
 
-    if(_tx_thread_smp_protection.tx_thread_smp_protect_count > 1)
-    {
-        volatile int dummy;
-        dummy++;
-    }
-
     /* Determine if this mutex is available.  */
     if (mutex_ptr -> tx_mutex_ownership_count == ((UINT) 0))
     {
@@ -351,11 +345,6 @@ UINT            status;
 
                 /* Restore interrupts.  */
                 TX_RESTORE
-                if((_tx_thread_smp_protection.tx_thread_smp_protect_count == 1) && (_tx_thread_smp_protection.tx_thread_smp_protect_core == _tx_thread_smp_core_get()))
-                {
-                    volatile int dummy;
-                    dummy++;
-                }
 
                 /* Determine if we need to raise the priority of the thread
                    owning the mutex.  */
@@ -400,12 +389,6 @@ UINT            status;
                 /* Call actual thread suspension routine.  */
                 _tx_thread_system_suspend(thread_ptr);
 #endif
-                if((_tx_thread_smp_protection.tx_thread_smp_protect_count == 1) && (_tx_thread_smp_protection.tx_thread_smp_protect_core == _tx_thread_smp_core_get()))
-                {
-                    volatile int dummy;
-                    dummy++;
-                }
-
                 /* Return the completion status.  */
                 status =  thread_ptr -> tx_thread_suspend_status;
             }
@@ -419,11 +402,6 @@ UINT            status;
             /* Immediate return, return error completion.  */
             status =  TX_NOT_AVAILABLE;
         }
-    }
-    if((_tx_thread_smp_protection.tx_thread_smp_protect_count == 1) && (_tx_thread_smp_protection.tx_thread_smp_protect_core == _tx_thread_smp_core_get()))
-    {
-        volatile int dummy;
-        dummy++;
     }
 
     /* Return completion status.  */
